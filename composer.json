@@ -1,0 +1,25 @@
+{
+    "name": "moho/payment-gateways",
+    "description": "Hosted payment page gateways for Macedonian payment providers (cPay/Casys, ...), shared by Cream ERP and Cream Portal.",
+    "type": "library",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Moho\\PaymentGateways\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Moho\\PaymentGateways\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
