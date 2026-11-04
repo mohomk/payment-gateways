@@ -43,6 +43,36 @@ class CasysGatewayTest extends TestCase
         $this->assertSame(Checksum::make($signed, 'live-secret')['checksum'], $form->fields['checkSum']);
     }
 
+    public function test_checkout_sends_and_signs_the_payers_details(): void
+    {
+        $form = Gateways::make(Gateways::CASYS, self::CONFIG, testMode: false)->checkout(new PaymentRequest(
+            paymentId: 'ORD-43',
+            amount: 100,
+            currency: 'MKD',
+            successUrl: 'https://shop.test/ok',
+            failUrl: 'https://shop.test/fail',
+            firstName: 'Ана',
+            lastName: 'Петрова',
+            email: 'a@b.mk',
+            address: 'Партизанска 1',
+            city: 'Скопје',
+            zip: '1000',
+            country: 'Македонија',
+            phone: '+38970123123',
+        ));
+
+        $this->assertSame('Ана', $form->fields['FirstName']);
+        $this->assertSame('Петрова', $form->fields['LastName']);
+        $this->assertSame('Партизанска 1', $form->fields['Address']);
+        $this->assertSame('Скопје', $form->fields['City']);
+        $this->assertSame('1000', $form->fields['Zip']);
+        $this->assertSame('Македонија', $form->fields['Country']);
+        $this->assertSame('+38970123123', $form->fields['Telephone']);
+
+        $signed = array_diff_key($form->fields, array_flip(['checkSumHeader', 'checkSum']));
+        $this->assertSame(Checksum::make($signed, 'live-secret')['checksum'], $form->fields['checkSum']);
+    }
+
     public function test_test_mode_uses_test_endpoint_and_key_without_a_password(): void
     {
         $config = ['merchant_password' => ''] + self::CONFIG;

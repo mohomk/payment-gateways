@@ -51,6 +51,11 @@ $form = $gateway->checkout(new PaymentRequest(
     firstName: $user->first_name,       // optional
     lastName: $user->last_name,         // optional
     email: $user->email,                // optional
+    address: 'Partizanska 1',           // optional, like city, zip, country and phone:
+    city: 'Skopje',                     // prefilled on the provider's payment page
+    zip: '1000',
+    country: 'North Macedonia',
+    phone: '+38970123123',
 ));
 ```
 
