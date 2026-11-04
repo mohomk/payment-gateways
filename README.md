@@ -7,6 +7,7 @@ Plain PHP (^8.2), no framework dependency. The app owns routes, sessions, storag
 | Provider | Type | Status |
 |---|---|---|
 | cPay (Casys) | `casys` | Supported |
+| NLB (Bankart) | `nlb` | Supported |
 
 ## Installation
 
@@ -107,6 +108,16 @@ Config keys (as stored in `PortalPaymentProvider.config`):
 `AmountToPay` is sent as denars ×100, as cPay requires; `OriginalAmount` and `Fee` are sent in denars.
 
 Test mode posts to `https://vpos.cpay.com.mk/mk-MK/TestChecksum`, which only checks the checksum.
+
+### NLB (Bankart)
+
+Config keys: `api_key`, `username`, `password`, `shared_secret` (all required).
+
+- `checkout()` calls Bankart's debit API and returns its payment page as a `GET` form (no form fields to sign; it may throw `RuntimeException` when Bankart refuses).
+- `merchantTransactionId={paymentId}` is appended to the success URL, which is also sent as Bankart's `callbackUrl` (Bankart POSTs JSON there and expects a `200` with body `OK`).
+- `handleCallback()` trusts nothing it receives except that id: it asks Bankart's status API and throws `InvalidCallbackException` unless the debit is `SUCCESS`.
+
+Test mode uses `https://bankart.paymentsandbox.cloud`.
 
 ## Adding a provider
 
