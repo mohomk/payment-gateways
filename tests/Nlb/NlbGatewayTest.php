@@ -107,6 +107,14 @@ class NlbGatewayTest extends TestCase
         $this->assertSame(NlbGateway::signature('GET', '', '', $headers['Date'], '/api/v3/status/key-1/getByMerchantTransactionId/ORD-42-1', 'secret'), $headers['X-Signature']);
     }
 
+    public function test_status_values_are_read_in_any_case(): void
+    {
+        $result = $this->gateway(['success' => true, 'transactionStatus' => 'success', 'transactionType' => 'debit', 'merchantTransactionId' => 'ORD-42-1', 'amount' => '2020.00', 'currency' => 'MKD'])
+            ->handleCallback(['merchantTransactionId' => 'ORD-42-1']);
+
+        $this->assertSame(2020, $result->amount);
+    }
+
     public function test_a_fractional_amount_never_matches(): void
     {
         $result = $this->gateway(['success' => true, 'transactionStatus' => 'SUCCESS', 'transactionType' => 'DEBIT', 'merchantTransactionId' => 'ORD-42-1', 'amount' => '2019.60', 'currency' => 'MKD'])

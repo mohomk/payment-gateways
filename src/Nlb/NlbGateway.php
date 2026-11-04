@@ -98,7 +98,8 @@ final class NlbGateway implements PaymentGateway
 
         $status = $this->call('GET', '/api/v3/status/' . $this->config['api_key'] . '/getByMerchantTransactionId/' . rawurlencode($paymentId));
 
-        if (!($status['success'] ?? false) || ($status['transactionStatus'] ?? null) !== 'SUCCESS' || ($status['transactionType'] ?? null) !== 'DEBIT'
+        // Bankart's docs show both "DEBIT" and "debit".
+        if (!($status['success'] ?? false) || strtoupper((string) ($status['transactionStatus'] ?? '')) !== 'SUCCESS' || strtoupper((string) ($status['transactionType'] ?? '')) !== 'DEBIT'
             || ($status['merchantTransactionId'] ?? null) !== $paymentId) {
             throw new InvalidCallbackException("NLB (Bankart) payment {$paymentId} is not successful.");
         }
