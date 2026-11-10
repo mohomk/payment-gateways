@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 class ChecksumTest extends TestCase
 {
-    /** Signed fields; expected values were produced by Cream Portal's production implementation. */
+    /** Signed fields; expected values were produced by a cPay implementation in production use. */
     private const PARAMS = [
         'AmountToPay' => '10000',
         'PayToMerchant' => '1000000123',
@@ -24,7 +24,7 @@ class ChecksumTest extends TestCase
 
     private const HEADER = '11AmountToPay,PayToMerchant,MerchantName,AmountCurrency,Details1,Details2,PaymentOKURL,PaymentFailURL,Email,OriginalAmount,OriginalCurrency,005010010003007006020022006003003';
 
-    public function test_new_api_checksum_matches_portal_implementation(): void
+    public function test_new_api_checksum_matches_a_production_implementation(): void
     {
         $this->assertSame(
             ['header' => self::HEADER, 'checksum' => 'c1d4a11d370f9debe25b4a88246e90cb482fe32eddbfffa67898281d2087ce8d'],
@@ -32,7 +32,7 @@ class ChecksumTest extends TestCase
         );
     }
 
-    public function test_old_api_checksum_matches_portal_implementation(): void
+    public function test_old_api_checksum_matches_a_production_implementation(): void
     {
         $this->assertSame(
             ['header' => self::HEADER, 'checksum' => '96f7bad136e7158823123330562c19a2'],
