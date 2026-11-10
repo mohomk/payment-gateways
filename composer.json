@@ -2,7 +2,30 @@
     "name": "moho/payment-gateways",
     "description": "Hosted payment page gateways for Macedonian payment providers (cPay/Casys, NLB/Bankart), built for Cream ERP.",
     "type": "library",
-    "license": "proprietary",
+    "keywords": [
+        "payment",
+        "payment-gateway",
+        "cpay",
+        "casys",
+        "nlb",
+        "bankart",
+        "macedonia",
+        "mkd",
+        "cream-erp"
+    ],
+    "homepage": "https://cream.mk",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Moho",
+            "homepage": "https://moho.mk"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/mohomk/payment-gateways/issues",
+        "source": "https://github.com/mohomk/payment-gateways",
+        "security": "https://github.com/mohomk/payment-gateways/security/policy"
+    },
     "require": {
         "php": "^8.2"
     },

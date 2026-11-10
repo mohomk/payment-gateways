@@ -17,6 +17,7 @@ The package builds the signed request that sends a customer to the provider's pa
 - [Providers](#providers)
 - [Adding a provider](#adding-a-provider)
 - [Tests](#tests)
+- [License](#license)
 
 ## Installation
 
@@ -124,6 +125,8 @@ It throws `InvalidCallbackException` unless the callback proves a completed paym
 - **Make the handler idempotent.** Providers may call back more than once, sometimes at the same moment: lock the payment row and process it once.
 - **Never take test payments on a live site.** In test mode cPay signs with its public test key (`TEST_PASS`), so anyone can sign a test callback, and test payments take no money.
 
+Found a vulnerability? Please report it privately, as described in [SECURITY.md](SECURITY.md).
+
 ## Providers
 
 ### cPay (Casys)
@@ -167,3 +170,7 @@ It throws `InvalidCallbackException` unless the callback proves a completed paym
 composer install
 vendor/bin/phpunit
 ```
+
+## License
+
+MIT, see [LICENSE](LICENSE). Made by [Moho](https://moho.mk) for [Cream ERP](https://cream.mk).
