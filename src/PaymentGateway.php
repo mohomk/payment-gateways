@@ -18,7 +18,7 @@ interface PaymentGateway
      *
      * @param  array<string, mixed>  $callback  the request data the provider posted back
      *
-     * @throws InvalidCallbackException when the signature is missing or wrong
+     * @throws InvalidCallbackException when the signature is missing or wrong, or the payment didn't complete
      */
     public function handleCallback(array $callback): PaymentResult;
 }

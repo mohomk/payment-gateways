@@ -104,6 +104,18 @@ class CasysGatewayTest extends TestCase
         $this->assertSame(['casys', 'ORD-42', 101, 'MKD', '987654'], [$result->provider, $result->paymentId, $result->amount, $result->currency, $result->reference]);
     }
 
+    public function test_handle_callback_rejects_a_signed_callback_without_a_payment_reference(): void
+    {
+        // A canceled or declined payment: signed, but cPay took no money, so there's no cPayPaymentRef.
+        $signed = ['AmountToPay' => '10100', 'AmountCurrency' => 'MKD', 'Details2' => 'ORD-42'];
+        ['header' => $header, 'checksum' => $checksum] = Checksum::make($signed, 'live-secret');
+
+        $this->expectException(InvalidCallbackException::class);
+
+        Gateways::make(Gateways::CASYS, self::CONFIG, testMode: false)
+            ->handleCallback($signed + ['ReturnCheckSumHeader' => $header, 'ReturnCheckSum' => $checksum]);
+    }
+
     public function test_handle_callback_rejects_a_bad_signature(): void
     {
         $this->expectException(InvalidCallbackException::class);

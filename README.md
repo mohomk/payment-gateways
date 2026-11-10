@@ -30,7 +30,7 @@ composer require "moho/payment-gateways:@dev"
 ```php
 use Moho\PaymentGateways\Gateways;
 
-// In Cream: from a PortalPaymentProvider record
+// In Cream: from a PaymentProvider record
 $gateway = Gateways::make($provider->type, $provider->config, $provider->is_test_mode);
 ```
 
@@ -89,7 +89,7 @@ $result->reference;  // provider's transaction reference
 $result->raw;        // callback as received
 ```
 
-A valid signature proves the data came from the provider. Whether the payment succeeded is decided by which URL it returned to (success or fail). Always compare `paymentId` and `amount` with your stored payment before marking it paid, and make the handler idempotent.
+Call it for the success return only: it throws `InvalidCallbackException` unless the callback proves a completed payment (cPay: a valid signature over `cPayPaymentRef`, the payment id and amount; NLB: Bankart's status API says `SUCCESS`). A declined or canceled cPay payment is signed too, so the URL it came back to proves nothing. Always compare `paymentId` and `amount` with your stored payment before marking it paid, and make the handler idempotent.
 
 ## Providers
 

@@ -27,6 +27,9 @@ final class CasysGateway implements PaymentGateway
     /** cPay's fixed checksum key on its test endpoint. */
     public const TEST_KEY = 'TEST_PASS';
 
+    /** The signed fields of a completed payment's callback. */
+    private const PAID_FIELDS = ['Details2', 'AmountToPay', 'cPayPaymentRef'];
+
     /**
      * @param  array<string, mixed>  $config
      */
@@ -77,6 +80,12 @@ final class CasysGateway implements PaymentGateway
     {
         if (!Checksum::verifyReturn($callback, $this->key(), $this->isOldApi())) {
             throw new InvalidCallbackException('cPay callback checksum is missing or invalid.');
+        }
+
+        // A declined or canceled payment comes back signed too: only cPay's payment reference, signed with the paid
+        // payment and amount, proves the money was taken.
+        if (array_diff(self::PAID_FIELDS, Checksum::signedNames($callback['ReturnCheckSumHeader'])) !== []) {
+            throw new InvalidCallbackException('cPay callback does not sign a completed payment.');
         }
 
         return new PaymentResult(

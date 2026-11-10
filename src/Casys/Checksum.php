@@ -41,12 +41,8 @@ final class Checksum
             return false;
         }
 
-        // "NN" count, then names, then a final comma-separated block of lengths.
-        $names = explode(',', substr($header, 2));
-        array_pop($names);
-
         $params = [];
-        foreach ($names as $name) {
+        foreach (self::signedNames($header) as $name) {
             $value = (string) ($callback[$name] ?? '');
             if ($value !== '') {
                 $params[$name] = $value;
@@ -54,5 +50,18 @@ final class Checksum
         }
 
         return hash_equals(strtolower(self::make($params, $key, $oldApi)['checksum']), strtolower($checksum));
+    }
+
+    /**
+     * The field names a checksum header signs: "NN" count, then names, then a final comma-separated block of lengths.
+     *
+     * @return array<int, string>
+     */
+    public static function signedNames(string $header): array
+    {
+        $names = explode(',', substr($header, 2));
+        array_pop($names);
+
+        return $names;
     }
 }
