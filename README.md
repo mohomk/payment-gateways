@@ -24,10 +24,7 @@ The package builds the signed request that sends a customer to the provider's pa
 
 ## Installation
 
-The package is not on Packagist yet, so add its repository first:
-
 ```bash
-composer config repositories.payment-gateways vcs https://github.com/mohomk/payment-gateways
 composer require moho/payment-gateways
 ```
 
