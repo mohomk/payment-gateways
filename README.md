@@ -7,7 +7,7 @@ The package builds the signed request that sends a customer to the provider's pa
 | Provider | Type | Payment page | Status |
 |---|---|---|---|
 | cPay (Casys) | `casys` | signed `POST` form | Supported |
-| NLB (Bankart) | `nlb` | redirect from Bankart's API | Supported |
+| NLB (Bankart) | `nlb` | redirect from Bankart's API | Beta: tested against Bankart's API documentation, not yet with a live account |
 
 ## Contents
 
@@ -17,18 +17,19 @@ The package builds the signed request that sends a customer to the provider's pa
 - [Providers](#providers)
 - [Adding a provider](#adding-a-provider)
 - [Tests](#tests)
+- [Contributing](#contributing)
 - [License](#license)
 
 ## Installation
+
+The package is not on Packagist yet, so add its repository first:
 
 ```bash
 composer config repositories.payment-gateways vcs https://github.com/mohomk/payment-gateways
 composer require moho/payment-gateways
 ```
 
-The repository is private, so the machine running `composer install` needs read access to it (an SSH deploy key on servers).
-
-To work on the package next to the application, use a path repository (symlinked into `vendor/`):
+To work on the package next to your application, use a path repository instead (symlinked into `vendor/`):
 
 ```bash
 composer config repositories.payment-gateways path ../payment-gateways
@@ -49,9 +50,11 @@ $gateway = Gateways::make(Gateways::CASYS, $config, testMode: false);
 
 `$config` holds the provider's merchant details (see [Providers](#providers)); a missing required key throws `InvalidArgumentException`.
 
-Providers called from the server (NLB) use a small built-in HTTP client. To use your own (for logging, timeouts or fakes in tests), pass a closure that sends the request and returns the response body:
+Providers called from the server (NLB) use a small built-in HTTP client, which needs `allow_url_fopen`. To use your own client (for logging, timeouts or fakes in tests), pass a closure that sends the request and returns the response body. With Laravel's HTTP client:
 
 ```php
+use Illuminate\Support\Facades\Http;
+
 $gateway = Gateways::make(Gateways::NLB, $config, false, fn (string $method, string $url, array $headers, string $body): string => Http::withHeaders($headers)
     ->timeout(30)
     ->when($body !== '', fn ($request) => $request->withBody($body, $headers['Content-Type']))
@@ -83,9 +86,9 @@ $form = $gateway->checkout(new PaymentRequest(
 ));
 ```
 
-Amounts are **whole denars** as integers. Round the order total before paying, so the customer is charged exactly what they saw. Use a new `paymentId` for every attempt: providers refuse one they have already seen.
+Amounts are **whole denars** as integers. Round the order total before paying, so the customer is charged exactly what they saw; the provider charges `amount + fee`. Use a new `paymentId` for every attempt: providers refuse one they have already seen.
 
-Render the form and submit it straight away, keeping the field order:
+`checkout()` returns a `RedirectForm` (`url`, `method`, `fields`). Render it and submit it straight away, keeping the field order:
 
 ```blade
 <form method="{{ $form->method }}" action="{{ $form->url }}" id="pay">
@@ -98,7 +101,7 @@ Render the form and submit it straight away, keeping the field order:
 
 ### 3. Verify the callback
 
-Call `handleCallback()` on the **success** return only:
+Call `handleCallback()` on the **success** return only, with everything the provider sent (query string and body):
 
 ```php
 use Moho\PaymentGateways\InvalidCallbackException;
@@ -106,14 +109,15 @@ use Moho\PaymentGateways\InvalidCallbackException;
 try {
     $result = $gateway->handleCallback($request->all());
 } catch (InvalidCallbackException) {
-    // not a completed payment: show the failed payment page
+    return redirect()->route('payment.failed'); // not a completed payment
 }
 
+$result->provider;   // 'casys' or 'nlb'
 $result->paymentId;  // the paymentId you sent
 $result->amount;     // total charged in denars, fee included
 $result->currency;
-$result->reference;  // the provider's transaction reference
-$result->raw;        // the callback as received
+$result->reference;  // the provider's transaction reference, when it sends one
+$result->raw;        // the callback (cPay) or Bankart's status answer (NLB)
 ```
 
 It throws `InvalidCallbackException` unless the callback proves a completed payment. The fail return needs no verification: nothing was paid.
@@ -152,8 +156,10 @@ Found a vulnerability? Please report it privately, as described in [SECURITY.md]
 | `password` | yes | API password |
 | `shared_secret` | yes | signs each API call (HMAC-SHA512) |
 
-- `checkout()` calls Bankart's debit API and returns its payment page as a `GET` form. It throws `RuntimeException` when Bankart refuses the payment or can't be reached.
-- `merchantTransactionId={paymentId}` is appended to the success URL, which is also Bankart's `callbackUrl`: Bankart POSTs JSON there and expects a `200` response with the body `OK`.
+- `checkout()` calls Bankart's debit API and returns its payment page as a `GET` form. It throws `RuntimeException` when Bankart refuses the payment or can't be reached; send the customer to your failed payment page then.
+- `merchantTransactionId={paymentId}` is appended to the success URL, which is also Bankart's `callbackUrl`: Bankart POSTs JSON there from its servers and expects a `200` response with the body `OK`. That URL must be reachable from the internet.
+- The fail URL is used for both canceled and failed payments.
+- The payer's name, email, address, city, zip and phone are sent as Bankart's customer data; the country is not.
 - `handleCallback()` trusts nothing it receives except that id: it asks Bankart's status API and accepts only a successful debit.
 - Test mode uses `https://bankart.paymentsandbox.cloud`.
 
@@ -170,6 +176,10 @@ Found a vulnerability? Please report it privately, as described in [SECURITY.md]
 composer install
 vendor/bin/phpunit
 ```
+
+## Contributing
+
+Issues and pull requests are welcome. Please add tests for any change, and report security issues privately as described in [SECURITY.md](SECURITY.md).
 
 ## License
 
