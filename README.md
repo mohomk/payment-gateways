@@ -1,5 +1,7 @@
 # moho/payment-gateways
 
+[![Tests](https://github.com/mohomk/payment-gateways/actions/workflows/tests.yml/badge.svg)](https://github.com/mohomk/payment-gateways/actions/workflows/tests.yml)
+
 Hosted payment page gateways for Macedonian payment providers, built for [Cream ERP](https://cream.mk).
 
 The package builds the signed request that sends a customer to the provider's payment page, and verifies the callback that brings them back. It is plain PHP (^8.2) with no framework dependency: the application keeps routes, sessions, payment records and merchant credentials.
