@@ -10,6 +10,7 @@ The package builds the signed request that sends a customer to the provider's pa
 |---|---|---|---|
 | cPay (Casys) | `casys` | signed `POST` form | Supported |
 | NLB (Bankart) | `nlb` | redirect from Bankart's API | Beta: tested against Bankart's API documentation, not yet with a live account |
+| Halkbank (NestPay) | `halkbank` | signed `POST` form | Beta: not yet tested with a sandbox account |
 
 ## Contents
 
@@ -111,7 +112,7 @@ try {
     return redirect()->route('payment.failed'); // not a completed payment
 }
 
-$result->provider;   // 'casys' or 'nlb'
+$result->provider;   // 'casys', 'nlb' or 'halkbank'
 $result->paymentId;  // the paymentId you sent
 $result->amount;     // total charged in denars, fee included
 $result->currency;
@@ -161,6 +162,18 @@ Found a vulnerability? Please report it privately, as described in [SECURITY.md]
 - The payer's name, email, address, city, zip and phone are sent as Bankart's customer data; the country is not.
 - `handleCallback()` trusts nothing it receives except that id: it asks Bankart's status API and accepts only a successful debit.
 - Test mode uses `https://bankart.paymentsandbox.cloud`.
+
+### Halkbank (Asseco NestPay)
+
+| Config key | Required | Notes |
+|---|---|---|
+| `client_id` | yes | merchant id, sent as `clientid` |
+| `store_key` | yes | signs the form and the callback |
+| `gateway_url` | live only | the bank's `est3Dgate` URL; test mode uses `https://torus-stage-halkbankmacedonia.asseco-see.com.tr/fim/est3Dgate` |
+
+- 3D Pay Hosting with hash version 3: base64 SHA-512 over every field's value in case-insensitive name order, then the store key.
+- The amount is sent with two decimals (`1990.00`), the currency as its ISO numeric code (MKD `807`, EUR `978`, USD `840`).
+- NestPay posts the result from the customer's browser to the success or fail URL. `handleCallback()` checks the hash over every field it received and accepts only `Response=Approved` with `ProcReturnCode=00`. Pass the posted fields unchanged: trimming values breaks the hash.
 
 ## Adding a provider
 

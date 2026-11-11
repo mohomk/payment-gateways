@@ -1,6 +1,6 @@
 {
     "name": "moho/payment-gateways",
-    "description": "Hosted payment page gateways for Macedonian payment providers (cPay/Casys, NLB/Bankart), built for Cream ERP.",
+    "description": "Hosted payment page gateways for Macedonian payment providers (cPay/Casys, NLB/Bankart, Halkbank/NestPay), built for Cream ERP.",
     "type": "library",
     "keywords": [
         "payment",
@@ -9,6 +9,8 @@
         "casys",
         "nlb",
         "bankart",
+        "halkbank",
+        "nestpay",
         "macedonia",
         "mkd",
         "cream-erp"
